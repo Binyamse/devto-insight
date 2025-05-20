@@ -1,4 +1,62 @@
-def _create_insight_prompt(self, analysis_data: Dict[str, Any]) -> str:
+"""
+LLM service for analyzing dev.to post data and generating insights.
+"""
+import os
+import json
+from typing import Dict, Any, Optional, List
+
+
+class LLMService:
+    """
+    Service for interacting with LLMs (OpenAI or Groq) to generate insights.
+    """
+    
+    def __init__(self, llm_provider: str = "openai"):
+        """
+        Initialize the LLM service.
+        
+        Args:
+            llm_provider: The LLM provider to use ('openai' or 'groq')
+        """
+        self.llm_provider = llm_provider.lower()
+        
+        # For now we'll use a mock implementation to avoid API dependencies
+        self.use_mock = True
+        
+    def generate_insights(self, analysis_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Generate insights from the analysis data.
+        
+        Args:
+            analysis_data: Dictionary containing post analysis data
+            
+        Returns:
+            Dictionary with generated insights
+        """
+        if self.use_mock:
+            return self._get_mock_insights(analysis_data)
+        
+        # In a real implementation, would call the LLM API here
+        return {}
+    
+    def generate_topic_ideas(self, analysis_data: Dict[str, Any], num_ideas: int = 5) -> List[Dict[str, Any]]:
+        """
+        Generate topic ideas based on analysis data.
+        
+        Args:
+            analysis_data: Dictionary containing post analysis data
+            num_ideas: Number of topic ideas to generate
+            
+        Returns:
+            List of topic idea dictionaries
+        """
+        if self.use_mock:
+            return self._get_mock_topic_ideas(analysis_data, num_ideas)
+        
+        # In a real implementation, would call the LLM API here
+        return []
+    
+    def _create_insight_prompt(self, analysis_data: Dict[str, Any]) -> str:
         """
         Create a prompt for generating insights.
         
@@ -247,156 +305,6 @@ Analysis data:
                 "estimated_reading_time": 9,
                 "performance_rationale": "Accessibility content is trending, and your web development articles have strong engagement metrics.",
                 "series_potential": "Would work well as a 5-part accessibility series" if has_series else "Standalone post"
-            }
-        ]
-        
-        # Return the requested number of ideas
-        return ideas[:num_ideas]"""
-LLM service for analyzing dev.to post data and generating insights.
-"""
-import os
-import json
-from typing import Dict, Any, Optional, List
-
-
-class LLMService:
-    """
-    Service for interacting with LLMs (OpenAI or Groq) to generate insights.
-    """
-    
-    def __init__(self, llm_provider: str = "openai"):
-        """
-        Initialize the LLM service.
-        
-        Args:
-            llm_provider: The LLM provider to use ('openai' or 'groq')
-        """
-        self.llm_provider = llm_provider.lower()
-        
-        # For now we'll use a mock implementation to avoid API dependencies
-        self.use_mock = True
-        
-    def generate_insights(self, analysis_data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Generate insights from the analysis data.
-        
-        Args:
-            analysis_data: Dictionary containing post analysis data
-            
-        Returns:
-            Dictionary with generated insights
-        """
-        if self.use_mock:
-            return self._get_mock_insights(analysis_data)
-        
-        # In a real implementation, would call the LLM API here
-        return {}
-    
-    def generate_topic_ideas(self, analysis_data: Dict[str, Any], num_ideas: int = 5) -> List[Dict[str, Any]]:
-        """
-        Generate topic ideas based on analysis data.
-        
-        Args:
-            analysis_data: Dictionary containing post analysis data
-            num_ideas: Number of topic ideas to generate
-            
-        Returns:
-            List of topic idea dictionaries
-        """
-        if self.use_mock:
-            return self._get_mock_topic_ideas(analysis_data, num_ideas)
-        
-        # In a real implementation, would call the LLM API here
-        return []
-    
-    def _get_mock_insights(self, analysis_data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Generate mock insights for testing.
-        
-        Args:
-            analysis_data: Dictionary containing post analysis data
-            
-        Returns:
-            Dictionary with mock insights
-        """
-        username = analysis_data.get('username', '')
-        top_tags = [tag['tag'] for tag in analysis_data.get('top_tags', [])[:3]] if 'top_tags' in analysis_data else ["javascript", "webdev", "programming"]
-        
-        return {
-            "performance_summary": f"Your dev.to blog posts show consistent engagement. Your most viewed posts average around 500-1000 views, with about 10-20 reactions per post. Your top-performing content tends to focus on practical tutorials and in-depth technical guides.",
-            
-            "key_patterns": [
-                f"Tutorial-style posts with specific code examples typically get 40% more engagement",
-                f"Posts with 5-10 minute reading times perform better than both shorter and longer content",
-                f"Articles published on Tuesday and Thursday mornings receive more views and reactions",
-                f"Content tagged with '{', '.join(top_tags)}' consistently attracts more readers"
-            ],
-            
-            "content_recommendations": [
-                "Create more step-by-step tutorials with practical code examples",
-                "Break complex topics into series of 5-8 minute reading time posts",
-                "Include diagrams or visualizations to improve engagement on conceptual topics",
-                "End posts with a clear call-to-action like a question to increase comment rates",
-                "Add a personal perspective to technical content to differentiate your writing"
-            ],
-            
-            "optimal_posting_strategy": {
-                "best_days": ["Tuesday", "Thursday"],
-                "best_hours": ["8:00", "12:00"],
-                "recommended_tags": top_tags,
-                "content_type": "In-depth tutorials with practical code examples and clear explanations of technical concepts",
-                "style_tips": "Aim for 5-8 minute reading time, use headings to break up content, include code samples, and end with thought-provoking questions to encourage comments"
-            }
-        }
-    
-    def _get_mock_topic_ideas(self, analysis_data: Dict[str, Any], num_ideas: int) -> List[Dict[str, Any]]:
-        """
-        Generate mock topic ideas for testing.
-        
-        Args:
-            analysis_data: Dictionary containing post analysis data
-            num_ideas: Number of topic ideas to generate
-            
-        Returns:
-            List of mock topic idea dictionaries
-        """
-        top_tags = [tag['tag'] for tag in analysis_data.get('top_tags', [])[:5]] if 'top_tags' in analysis_data else ["javascript", "react", "python", "webdev", "programming"]
-        
-        ideas = [
-            {
-                "title": "Building a Real-time Analytics Dashboard with React and WebSockets",
-                "description": "A step-by-step guide to creating a live analytics dashboard using React for the frontend and WebSockets for real-time data updates. Includes performance optimization tips.",
-                "suggested_tags": ["react", "javascript", "webdev", "tutorial"],
-                "estimated_reading_time": 8,
-                "performance_rationale": "Combines your top-performing tags and follows the tutorial format that has worked well for your audience in the past."
-            },
-            {
-                "title": "10 Python Tricks That Will Make Your Code More Pythonic",
-                "description": "Explore lesser-known Python features that can make your code more elegant, readable, and truly Pythonic. Includes practical examples and performance comparisons.",
-                "suggested_tags": ["python", "programming", "tutorial", "beginners"],
-                "estimated_reading_time": 6,
-                "performance_rationale": "Python content consistently performs well, and list-style articles have good engagement ratios on your profile."
-            },
-            {
-                "title": "Optimizing API Performance: Techniques for Faster Web Applications",
-                "description": "Learn practical strategies to optimize your API endpoints for speed and efficiency. Covers caching, pagination, database queries, and more with real-world examples.",
-                "suggested_tags": ["api", "performance", "webdev", "backend"],
-                "estimated_reading_time": 7,
-                "performance_rationale": "Performance-related content gets high engagement, and this combines several of your most successful tags."
-            },
-            {
-                "title": "Building a CI/CD Pipeline for Your Personal Projects",
-                "description": "A complete guide to setting up a professional CI/CD pipeline for your side projects, using free tools and services. Automate testing, linting, and deployment.",
-                "suggested_tags": ["devops", "tutorial", "github", "productivity"],
-                "estimated_reading_time": 9,
-                "performance_rationale": "Tutorial-style content with practical applications tends to perform best according to your metrics."
-            },
-            {
-                "title": "Understanding TypeScript Generics: From Basics to Advanced Patterns",
-                "description": "A deep dive into TypeScript generics with practical examples. Learn how to write more flexible, reusable code while maintaining type safety.",
-                "suggested_tags": ["typescript", "javascript", "tutorial", "programming"],
-                "estimated_reading_time": 8,
-                "performance_rationale": "Your JavaScript and TypeScript content has historically received good engagement, especially when focused on specific features."
             }
         ]
         
