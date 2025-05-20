@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Results | Dev.to Post Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.18.2/plotly.min.js"></script>
+</head>
+<body>
+    <div class="container results-container">
+        <header>
+            <h1><i class="fab fa-dev"></i> Dev.to Post Analyzer</h1>
+            <p class="subtitle">Analysis Results for <strong>@{{ username }}</strong></p>
+            <a href="/" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Home</a>
+        </header>
+
+        <div class="dashboard">
+            <!-- Overall Stats -->
+            <div class="section overview-section">
+                <h2><i class="fas fa-chart-pie"></i> Overall Performance</h2>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> 
+                    Note: View counts are not available through the dev.to API. The analysis focuses on reactions, comments, 
+                    and other available metrics. Any view counts shown are estimates for visualization purposes.
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-value">{{ report.overall_stats.total_articles }}</span>
+                        <span class="stat-label">Total Articles</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value">{{ report.overall_stats.total_reactions|int }}</span>
+                        <span class="stat-label">Total Reactions</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value">{{ report.overall_stats.total_comments|int }}</span>
+                        <span class="stat-label">Total Comments</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value">{{ "%.1f"|format(report.overall_stats.avg_reading_time) }}</span>
+                        <span class="stat-label">Avg. Read Time (min)</span>
+                    </div>
+                </div>
+                
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <h3>Top Tags</h3>
+                        <p>Your most used tags and their performance</p>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Top Posts</h3>
+                        <p>Your most engaging content</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tag Recommendations Section (New) -->
+            {% if report.tag_recommendations and report.tag_recommendations|length > 0 %}
+            <div class="section recommendations-section">
+                <h2><i class="fas fa-lightbulb"></i> Tag Recommendations</h2>
+                <p>Based on your content performance, here are some tag recommendations for future posts</p>
+                
+                <div class="recommendations-grid">
+                    {% for recommendation in report.tag_recommendations %}
+                    <div class="recommendation-card">
+                        <h3>{{ recommendation.title }}</h3>
+                        <p class="recommendation-description">{{ recommendation.description }}</p>
+                        
+                        {% if recommendation.type == 'top_performing' or recommendation.type == 'underused' %}
+                        <div class="tag-list">
+                            {% for tag in recommendation.tags %}
+                            <span class="tag">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                        {% if recommendation.metrics %}
+                        <table class="recommendation-metrics">
+                            <thead>
+                                <tr>
+                                    <th>Tag</th>
+                                    <th>Avg. Reactions</th>
+                                    <th>Avg. Comments</th>
+                                    {% if recommendation.type == 'underused' %}
+                                    <th>Used Count</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for metric in recommendation.metrics %}
+                                <tr>
+                                    <td>{{ metric.tag }}</td>
+                                    <td>{{ "%.1f"|format(metric.avg_reactions) }}</td>
+                                    <td>{{ "%.1f"|format(metric.avg_comments) }}</td>
+                                    {% if recommendation.type == 'underused' %}
+                                    <td>{{ metric.count }}</td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% endif %}
+                        
+                        {% elif recommendation.type == 'combinations' %}
+                        <div class="combinations-list">
+                            {% for combo in recommendation.combinations %}
+                            <div class="combination-item">
+                                <div class="tag-list">
+                                    {% for tag in combo.tags %}
+                                    <span class="tag">{{ tag }}</span>
+                                    {% endfor %}
+                                </div>
+                                <div class="combination-stats">
+                                    <span><i class="fas fa-chart-line"></i> {{ "%.1f"|format(combo.avg_engagement) }} avg engagement</span>
+                                    <span><i class="fas fa-copy"></i> Used in {{ combo.count }} posts</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        {% elif recommendation.type == 'trending' %}
+                        <div class="tag-list">
+                            {% for tag in recommendation.tags %}
+                            <span class="tag trending-tag">{{ tag }} <i class="fas fa-chart-line"></i></span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Detailed Publishing Time Analysis (New) -->
+            {% if report.detailed_time_analysis and report.detailed_time_analysis.best_combinations|length > 0 %}
+            <div class="section detailed-time-section">
+                <h2><i class="fas fa-clock"></i> Optimal Publishing Times</h2>
+                <p>In-depth analysis of when your content performs best</p>
+                
+                <div class="best-combinations">
+                    <h3>Best Day & Hour Combinations</h3>
+                    <p>These specific time slots have yielded the best engagement for your content</p>
+                    
+                    <div class="combinations-grid">
+                        {% for combo in report.detailed_time_analysis.best_combinations %}
+                        <div class="time-combo-card">
+                            <div class="time-combo-header">
+                                <i class="fas fa-calendar-day"></i> {{ combo.day }} at {{ combo.hour }}:00
+                            </div>
+                            <div class="combo-stats">
+                                <div class="stat-item">
+                                    <span class="stat-value">{{ "%.1f"|format(combo.avg_engagement) }}</span>
+                                    <span class="stat-label">Avg. Engagement</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value">{{ "%.1f"|format(combo.avg_reactions) }}</span>
+                                    <span class="stat-label">Avg. Reactions</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value">{{ combo.article_count }}</span>
+                                    <span class="stat-label">Posts</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="time-analysis-note">
+                        <i class="fas fa-info-circle"></i> 
+                        Combinations require at least 2 posts for statistical significance. 
+                        Results are sorted by average engagement (reactions + comments).
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="two-column-layout">
+                <!-- Top Posts -->
+                <div class="section posts-section">
+                    <h2><i class="fas fa-medal"></i> Top Performing Posts</h2>
+                    
+                    <div class="tabs">
+                        <div class="tab-buttons">
+                            <button class="tab-button active" data-tab="views-tab">By Views</button>
+                            <button class="tab-button" data-tab="engagement-tab">By Engagement</button>
+                        </div>
+                        
+                        <div class="tab-content active" id="views-tab">
+                            <div class="post-list">
+                                {% for post in report.top_posts.by_views %}
+                                <div class="post-card">
+                                    <h3><a href="{{ post.url }}" target="_blank">{{ post.title }}</a></h3>
+                                    <div class="post-stats">
+                                        <span><i class="fas fa-eye"></i> {{ post.page_views_count }} views</span>
+                                        <span><i class="fas fa-heart"></i> {{ post.public_reactions_count }} reactions</span>
+                                        <span><i class="fas fa-comment"></i> {{ post.comments_count }} comments</span>
+                                    </div>
+                                    <div class="post-meta">
+                                        <span><i class="fas fa-clock"></i> {{ post.reading_time_minutes }} min read</span>
+                                        <span><i class="fas fa-calendar"></i> {{ post.published_at.split('T')[0] }}</span>
+                                    </div>
+                                    <div class="post-tags">
+                                        {% if post.tags is string %}
+                                            {% for tag in post.tags.split(',') %}
+                                                <span class="tag">{{ tag }}</span>
+                                            {% endfor %}
+                                        {% elif post.tags is iterable and post.tags is not string %}
+                                            {% for tag in post.tags %}
+                                                <span class="tag">{{ tag }}</span>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+
+
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="tab-content" id="engagement-tab">
+                            <div class="post-list">
+                                {% for post in report.top_posts.by_engagement %}
+                                <div class="post-card">
+                                    <h3><a href="{{ post.url }}" target="_blank">{{ post.title }}</a></h3>
+                                    <div class="post-stats">
+                                        <span><i class="fas fa-chart-line"></i> {{ "%.3f"|format(post.engagement_ratio) }} engagement</span>
+                                        <span><i class="fas fa-eye"></i> {{ post.page_views_count }} views</span>
+                                        <span><i class="fas fa-heart"></i> {{ post.public_reactions_count }} reactions</span>
+                                    </div>
+                                    <div class="post-meta">
+                                        <span><i class="fas fa-clock"></i> {{ post.reading_time_minutes }} min read</span>
+                                        <span><i class="fas fa-calendar"></i> {{ post.published_at.split('T')[0] }}</span>
+                                    </div>
+                                    <div class="post-tags">
+                                        {% if post.tags is string %}
+                                            {% for tag in post.tags.split(',') %}
+                                                <span class="tag">{{ tag }}</span>
+                                            {% endfor %}
+                                        {% elif post.tags is iterable and post.tags is not string %}
+                                            {% for tag in post.tags %}
+                                                <span class="tag">{{ tag }}</span>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tag Analysis -->
+                <div class="section tags-section">
+                    <h2><i class="fas fa-tags"></i> Tag Performance</h2>
+                    <div class="tag-analysis">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Tag</th>
+                                    <th>Posts</th>
+                                    <th>Avg. Views</th>
+                                    <th>Avg. Reactions</th>
+                                    <th>Engagement</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tag_data in report.tag_performance %}
+                                <tr>
+                                    <td>{{ tag_data.tag }}</td>
+                                    <td>{{ tag_data.count }}</td>
+                                    <td>{{ "%.0f"|format(tag_data.avg_views) }}</td>
+                                    <td>{{ "%.1f"|format(tag_data.avg_reactions) }}</td>
+                                    <td>{{ "%.3f"|format(tag_data.engagement) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Publishing Times -->
+            <div class="section timing-section">
+                <h2><i class="fas fa-clock"></i> Best Publishing Times</h2>
+                <div class="timing-analysis">
+                    <div class="two-column-layout">
+                        <div class="chart-container">
+                            <h3>By Day of Week</h3>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Day</th>
+                                        <th>Avg. Views</th>
+                                        <th>Avg. Reactions</th>
+                                        <th>Articles</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for day_data in report.best_publishing_times.by_day %}
+                                    <tr>
+                                        <td>{{ day_data.day }}</td>
+                                        <td>{{ "%.0f"|format(day_data.avg_views) }}</td>
+                                        <td>{{ "%.1f"|format(day_data.avg_reactions) }}</td>
+                                        <td>{{ day_data.article_count }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="chart-container">
+                            <h3>By Hour of Day</h3>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Hour</th>
+                                        <th>Avg. Views</th>
+                                        <th>Avg. Reactions</th>
+                                        <th>Articles</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for hour_data in report.best_publishing_times.by_hour %}
+                                    <tr>
+                                        <td>{{ hour_data.hour }}:00</td>
+                                        <td>{{ "%.0f"|format(hour_data.avg_views) }}</td>
+                                        <td>{{ "%.1f"|format(hour_data.avg_reactions) }}</td>
+                                        <td>{{ hour_data.article_count }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Insights -->
+            {% if llm_enabled and insights %}
+            <div class="section insights-section">
+                <h2><i class="fas fa-robot"></i> AI-Powered Insights</h2>
+                
+                <div class="insights-container">
+                    <div class="insight-box">
+                        <h3>Performance Summary</h3>
+                        <p>{{ insights.performance_summary }}</p>
+                    </div>
+                    
+                    <div class="insight-box">
+                        <h3>Key Patterns</h3>
+                        <ul>
+                            {% for pattern in insights.key_patterns %}
+                            <li>{{ pattern }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    
+                    <div class="insight-box">
+                        <h3>Content Recommendations</h3>
+                        <ul>
+                            {% for recommendation in insights.content_recommendations %}
+                            <li>{{ recommendation }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    
+                    <div class="insight-box">
+                        <h3>Optimal Posting Strategy</h3>
+                        <div class="strategy-details">
+                            <div class="strategy-item">
+                                <h4>Best Days to Post</h4>
+                                <p>{{ ", ".join(insights.optimal_posting_strategy.best_days) }}</p>
+                            </div>
+                            <div class="strategy-item">
+                                <h4>Best Hours to Post</h4>
+                                <p>{{ ", ".join(insights.optimal_posting_strategy.best_hours) }}</p>
+                            </div>
+                            <div class="strategy-item">
+                                <h4>Recommended Tags</h4>
+                                <p>{{ ", ".join(insights.optimal_posting_strategy.recommended_tags) }}</p>
+                            </div>
+                            <div class="strategy-item full-width">
+                                <h4>Content Type</h4>
+                                <p>{{ insights.optimal_posting_strategy.content_type }}</p>
+                            </div>
+                            <div class="strategy-item full-width">
+                                <h4>Style Tips</h4>
+                                <p>{{ insights.optimal_posting_strategy.style_tips }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Topic Ideas Section -->
+                    {% if topic_ideas %}
+                    <div class="topic-ideas-section">
+                        <h3>Content Ideas for Your Next Posts</h3>
+                        <div class="topic-list">
+                            {% for idea in topic_ideas %}
+                            <div class="topic-card">
+                                <h4>{{ idea.title }}</h4>
+                                <p class="topic-description">{{ idea.description }}</p>
+                                <div class="topic-meta">
+                                    <span><i class="fas fa-clock"></i> Est. Reading Time: {{ idea.estimated_reading_time }} min</span>
+                                    <div class="topic-tags">
+                                        {% for tag in idea.suggested_tags %}
+                                        <span class="tag">{{ tag }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="topic-rationale">
+                                    <h5>Why This Should Perform Well:</h5>
+                                    <p>{{ idea.performance_rationale }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            {% elif llm_enabled %}
+                <div class="section insights-section">
+                    <h2><i class="fas fa-robot"></i> AI-Powered Insights</h2>
+                    <p>AI insights are enabled but no data was returned. This could be due to an API configuration issue.</p>
+                </div>
+            {% endif %}
+            </div>
+        </div>
+
+        <footer>
+            <p>
+                Dev.to Post Analyzer is an open-source tool.
+                <a href="https://github.com/yourusername/devto-insight" target="_blank">
+                    <i class="fab fa-github"></i> View on GitHub
+                </a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Initialize tabs
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all buttons and contents
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Add active class to clicked button
+                    button.classList.add('active');
+                    
+                    // Show corresponding tab content
+                    const tabId = button.dataset.tab;
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
