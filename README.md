@@ -2,14 +2,23 @@
 
 A comprehensive tool for analyzing your dev.to blog posts' performance and getting AI-powered content recommendations.
 
+> **Important Note About Performance Metrics**: This analyzer focuses on meaningful engagement metrics since view counts are not available through the dev.to API. Instead of relying on views, we analyze:
+> - Reaction counts and types (likes, unicorns, etc.)
+> - Comment engagement and discussion quality
+> - Content impact through engagement ratios
+> - Time-based performance patterns
+> - Tag effectiveness through engagement metrics
+
 ![Dev.to Post Analyzer Screenshot](https://via.placeholder.com/800x450?text=Dev.to+Post+Analyzer)
 
 ## Features
 
-- **Performance Analysis**: Track views, reactions, comments, and engagement metrics
-- **Tag Analysis**: Discover which tags perform best with your audience
-- **Timing Optimization**: Find the best days and times to publish
-- **AI-Powered Insights**: Get content strategy recommendations from AI
+- **Performance Analysis**: Track engagement metrics including reactions, comments, and interaction rates
+  - Note: View counts are not available through the dev.to API
+  - Performance analysis focuses on quality metrics such as reaction-to-interaction ratios, comment engagement, and content effectiveness
+- **Tag Analysis**: Discover which tags perform best with your audience based on engagement metrics
+- **Timing Optimization**: Find the best days and times to publish for maximum engagement
+- **AI-Powered Insights**: Get data-driven content strategy recommendations based on your engagement patterns
 - **Content Ideas**: Generate topic ideas based on your historical performance
 - **Visualization**: Interactive charts to visualize your data
 - **Export Options**: Download your analysis in JSON or CSV format

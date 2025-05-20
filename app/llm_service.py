@@ -160,6 +160,158 @@ Analysis data:
         prompt += json.dumps(analysis_data, indent=2)
         return prompt
     
+    def _generate_title(self, pattern: str, tags: List[str], analysis_data: Dict[str, Any]) -> str:
+        """
+        Generate a dynamic title based on pattern and user's data.
+        
+        Args:
+            pattern: The type of content (tutorial, guide, best-practices, etc)
+            tags: List of tags to incorporate
+            analysis_data: Dictionary containing post analysis data
+            
+        Returns:
+            A dynamically generated title
+        """
+        # Create a prompt for title generation based on successful posts
+        high_engagement_posts = analysis_data.get('highest_engagement_posts', [])
+        
+        # Extract titles and engagement metrics from successful posts
+        successful_titles = []
+        for post in high_engagement_posts:
+            post_tags = post.get('tags', '').split(',') if isinstance(post.get('tags'), str) else post.get('tags', [])
+            post_tags = [tag.strip().lower() for tag in post_tags if tag.strip()]
+            
+            # Check if the post uses any of our target tags
+            if any(tag.lower() in post_tags for tag in tags):
+                successful_titles.append({
+                    'title': post.get('title', ''),
+                    'engagement': post.get('engagement_ratio', 0),
+                    'tags': post_tags
+                })
+        
+        # Sort by engagement to prioritize most successful titles
+        successful_titles.sort(key=lambda x: x['engagement'], reverse=True)
+        
+        # Create prompt for LLM with context about successful titles and desired focus
+        prompt = f"""
+Based on the following successful blog post titles and their engagement metrics,
+generate a title for a new {pattern} post about {', '.join(tags)}.
+
+Successful titles for reference:
+{json.dumps(successful_titles[:5], indent=2)}
+
+Content type: {pattern}
+Primary tags: {', '.join(tags)}
+
+The title should:
+1. Follow similar patterns to the high-engagement titles
+2. Be specific and actionable
+3. Include the key technologies ({', '.join(tags)})
+4. Be appropriate for a {pattern} post
+5. Be engaging and professional
+"""
+        
+        # For mock implementation, generate a contextual title
+        import random
+        
+        # Extract common patterns from successful titles
+        patterns = {
+            'tutorial': [
+                f"Building {tags[0]} Applications: A Step-by-Step Guide",
+                f"How to Master {tags[0]} Development",
+                f"Practical {tags[0]} Tips for Real-World Projects"
+            ],
+            'best-practices': [
+                f"{tags[0]} Best Practices for Professional Developers",
+                f"Writing Better {tags[0]} Code: Tips and Tricks",
+                f"Advanced {tags[0]} Patterns You Should Know"
+            ],
+            'deep-dive': [
+                f"Deep Dive: Advanced {tags[0]} Concepts",
+                f"Understanding {tags[0]} Internals",
+                f"Advanced {tags[0]} Architecture Patterns"
+            ]
+        }
+        
+        # In a real implementation, this would call the LLM API
+        # For now, use patterns based on content type and successful titles
+        title_patterns = patterns.get(pattern, patterns['tutorial'])
+        chosen_title = random.choice(title_patterns)
+        
+        # If we have multiple tags, try to incorporate them
+        if len(tags) > 1:
+            if "with" not in chosen_title:
+                chosen_title = chosen_title.replace(f"{tags[0]}", f"{tags[0]} with {tags[1]}")
+        
+        return chosen_title
+
+    def _normalize_tag(self, tag: str) -> str:
+        """
+        Normalize tag case to match dev.to conventions.
+        
+        Args:
+            tag: The tag to normalize
+            
+        Returns:
+            Normalized tag string
+        """
+        # Common tags that should be in specific case
+        special_cases = {
+            'javascript': 'JavaScript',
+            'typescript': 'TypeScript',
+            'nodejs': 'Node.js',
+            'nextjs': 'Next.js',
+            'reactjs': 'React.js',
+            'vuejs': 'Vue.js',
+            'aws': 'AWS',
+            'dotnet': '.NET',
+            'csharp': 'C#',
+            'cpp': 'C++',
+            'devops': 'DevOps',
+            'ai': 'AI',
+            'ml': 'ML',
+            'api': 'API',
+            'graphql': 'GraphQL',
+            'postgresql': 'PostgreSQL',
+            'mysql': 'MySQL',
+            'nosql': 'NoSQL',
+            'mongodb': 'MongoDB',
+            'php': 'PHP',
+            'css': 'CSS',
+            'html': 'HTML',
+            'sass': 'Sass',
+            'scss': 'SCSS',
+            'ios': 'iOS',
+            'macos': 'macOS',
+            'linux': 'Linux',
+            'windows': 'Windows',
+            'ci': 'CI',
+            'cd': 'CD',
+            'cicd': 'CI/CD',
+            'iot': 'IoT',
+            'ui': 'UI',
+            'ux': 'UX',
+            'jwt': 'JWT',
+            'oauth': 'OAuth',
+            'regex': 'RegEx',
+            'webdev': 'WebDev',
+            'seo': 'SEO'
+        }
+        
+        # Convert to lowercase for comparison
+        tag_lower = tag.lower()
+        
+        # Return special case if it exists
+        if tag_lower in special_cases:
+            return special_cases[tag_lower]
+        
+        # For compound tags with hyphens, capitalize each part
+        if '-' in tag:
+            return '-'.join(word.capitalize() for word in tag.split('-'))
+        
+        # Default to capitalizing the first letter
+        return tag.capitalize()
+
     def _get_mock_insights(self, analysis_data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Generate mock insights for testing.
@@ -244,69 +396,120 @@ Analysis data:
         Returns:
             List of mock topic idea dictionaries
         """
-        top_tags = [tag['tag'] for tag in analysis_data.get('top_tags', [])[:5]] if 'top_tags' in analysis_data and len(analysis_data['top_tags']) > 0 else ["javascript", "react", "python", "webdev", "programming"]
+        # Get user's top performing tags with performance metrics and normalize them
+        top_tags = analysis_data.get('top_tags', [])
+        top_performing_tags = [self._normalize_tag(tag['tag']) for tag in top_tags][:5]
+        
+        # Get best tag combinations from performance data
+        high_engagement_posts = analysis_data.get('highest_engagement_posts', [])
+        successful_tag_combos = {}
+        
+        for post in high_engagement_posts:
+            tags = post.get('tags', '').split(',') if isinstance(post.get('tags'), str) else post.get('tags', [])
+            tags = [self._normalize_tag(tag.strip()) for tag in tags if tag.strip()]
+            if len(tags) >= 2:
+                combo = tuple(sorted(tags))
+                if combo not in successful_tag_combos:
+                    successful_tag_combos[combo] = {
+                        'engagement': post.get('engagement_ratio', 0),
+                        'count': 1
+                    }
+                else:
+                    successful_tag_combos[combo]['count'] += 1
+                    successful_tag_combos[combo]['engagement'] = max(
+                        successful_tag_combos[combo]['engagement'],
+                        post.get('engagement_ratio', 0)
+                    )
+        
+        # Sort tag combinations by engagement and count
+        best_combos = sorted(
+            successful_tag_combos.items(),
+            key=lambda x: (x[1]['engagement'], x[1]['count']),
+            reverse=True
+        )
         
         # Check if user publishes series
         has_series = 'series_performance' in analysis_data and len(analysis_data.get('series_performance', [])) > 0
         
-        ideas = [
-            {
-                "title": "Building a Real-time Analytics Dashboard with React and WebSockets",
-                "description": "A step-by-step guide to creating a live analytics dashboard using React for the frontend and WebSockets for real-time data updates. Includes performance optimization tips.",
-                "suggested_tags": ["react", "javascript", "webdev", "tutorial"],
-                "estimated_reading_time": 8,
-                "performance_rationale": "Combines your top-performing tags and follows the tutorial format that has worked well for your audience in the past.",
-                "series_potential": "Would work well as a 3-part series on realtime data visualization" if has_series else "Standalone post"
-            },
-            {
-                "title": "10 Python Tricks That Will Make Your Code More Pythonic",
-                "description": "Explore lesser-known Python features that can make your code more elegant, readable, and truly Pythonic. Includes practical examples and performance comparisons.",
-                "suggested_tags": ["python", "programming", "tutorial", "beginners"],
-                "estimated_reading_time": 6,
-                "performance_rationale": "List-style articles with concrete code examples have strong engagement rates in your historical data.",
-                "series_potential": "Standalone post"
-            },
-            {
-                "title": "Optimizing API Performance: Techniques for Faster Web Applications",
-                "description": "Learn practical strategies to optimize your API endpoints for speed and efficiency. Covers caching, pagination, database queries, and more with real-world examples.",
-                "suggested_tags": ["api", "performance", "webdev", "backend"],
-                "estimated_reading_time": 7,
-                "performance_rationale": "Performance-related content gets high engagement, and this combines several of your most successful tags.",
-                "series_potential": "Would work well as a 4-part series on web performance optimization" if has_series else "Standalone post"
-            },
-            {
-                "title": "Building a CI/CD Pipeline for Your Personal Projects",
-                "description": "A complete guide to setting up a professional CI/CD pipeline for your side projects, using free tools and services. Automate testing, linting, and deployment.",
-                "suggested_tags": ["devops", "tutorial", "github", "productivity"],
-                "estimated_reading_time": 9,
-                "performance_rationale": "Tutorial-style content with practical applications tends to perform best according to your metrics.",
-                "series_potential": "Would work well as a 2-part series" if has_series else "Standalone post"
-            },
-            {
-                "title": "Understanding TypeScript Generics: From Basics to Advanced Patterns",
-                "description": "A deep dive into TypeScript generics with practical examples. Learn how to write more flexible, reusable code while maintaining type safety.",
-                "suggested_tags": ["typescript", "javascript", "tutorial", "programming"],
-                "estimated_reading_time": 8,
-                "performance_rationale": "Your JavaScript and TypeScript content has historically received good engagement, especially when focused on specific features.",
-                "series_potential": "Would work well as a 3-part series on TypeScript advanced features" if has_series else "Standalone post"
-            },
-            {
-                "title": "Dockerizing Your Development Environment: A Practical Guide",
-                "description": "Learn how to set up a consistent, reproducible development environment using Docker. Includes configurations for popular frameworks and debugging tips.",
-                "suggested_tags": ["docker", "devops", "productivity", "tutorial"],
-                "estimated_reading_time": 7,
-                "performance_rationale": "DevOps and productivity content performs well with your audience, and Docker is a highly relevant topic.",
-                "series_potential": "Standalone post"
-            },
-            {
-                "title": "Building Accessible Web Applications: ARIA Best Practices",
-                "description": "A comprehensive guide to implementing ARIA attributes correctly in your web applications. Make your sites more accessible with practical examples and testing strategies.",
-                "suggested_tags": ["accessibility", "webdev", "tutorial", "a11y"],
-                "estimated_reading_time": 9,
-                "performance_rationale": "Accessibility content is trending, and your web development articles have strong engagement metrics.",
-                "series_potential": "Would work well as a 5-part accessibility series" if has_series else "Standalone post"
-            }
-        ]
+        # Generate ideas based on successful patterns
+        ideas = []
         
-        # Return the requested number of ideas
+        # Idea 1: Tutorial combining top two tags
+        if len(top_performing_tags) >= 2:
+            ideas.append({
+                "title": self._generate_title("tutorial", [top_performing_tags[0], top_performing_tags[1]], analysis_data),
+                "description": f"A comprehensive guide combining {top_performing_tags[0]} and {top_performing_tags[1]} to build production-ready applications. Learn best practices, optimization techniques, and real-world implementation patterns.",
+                "suggested_tags": [top_performing_tags[0], top_performing_tags[1], self._normalize_tag("tutorial"), self._normalize_tag("programming")],
+                "estimated_reading_time": 8,
+                "performance_rationale": f"Combines your two best-performing tags ({top_performing_tags[0]}, {top_performing_tags[1]}) which have an average of {next((tag['avg_reactions'] for tag in top_tags if tag['tag'] == top_performing_tags[0].lower()), 0):.1f} reactions per post.",
+                "series_potential": "Would work well as a 3-part series" if has_series else "Standalone post"
+            })
+        
+        # Idea 2: Best practices based on top tag
+        if top_performing_tags:
+            ideas.append({
+                "title": self._generate_title("best-practices", [top_performing_tags[0]], analysis_data),
+                "description": f"Learn from real-world experience about common pitfalls in {top_performing_tags[0]} development. Includes code examples, performance tips, and maintainability guidelines.",
+                "suggested_tags": [top_performing_tags[0], self._normalize_tag("bestpractices"), self._normalize_tag("programming"), self._normalize_tag("debugging")],
+                "estimated_reading_time": 7,
+                "performance_rationale": f"Your content in {top_performing_tags[0]} consistently performs well with {next((tag['avg_reactions'] for tag in top_tags if tag['tag'] == top_performing_tags[0].lower()), 0):.1f} average reactions.",
+                "series_potential": "Standalone post"
+            })
+        
+        # Idea 3: Based on best performing tag combination
+        if best_combos:
+            best_combo = list(best_combos[0][0])
+            ideas.append({
+                "title": self._generate_title("tutorial", best_combo, analysis_data),
+                "description": f"Learn how to integrate {best_combo[0]} with {best_combo[1]} to create robust applications. Based on real-world best practices and performance optimization techniques.",
+                "suggested_tags": best_combo + [self._normalize_tag("tutorial"), self._normalize_tag("webdev")],
+                "estimated_reading_time": 9,
+                "performance_rationale": f"This tag combination has historically performed very well, with {best_combos[0][1]['engagement']:.3f} engagement ratio across {best_combos[0][1]['count']} posts.",
+                "series_potential": "Would work well as a 4-part series" if has_series else "Standalone post"
+            })
+        
+        # Idea 4: Testing and automation for top performing tag
+        if top_performing_tags:
+            ideas.append({
+                "title": self._generate_title("best-practices", [top_performing_tags[0], "testing"], analysis_data),
+                "description": f"A comprehensive guide to testing {top_performing_tags[0]} applications. Covers unit testing, integration testing, and setting up CI/CD pipelines.",
+                "suggested_tags": [top_performing_tags[0], self._normalize_tag("testing"), self._normalize_tag("automation"), self._normalize_tag("devops")],
+                "estimated_reading_time": 8,
+                "performance_rationale": f"Content about {top_performing_tags[0]} combined with testing/automation typically drives high engagement.",
+                "series_potential": "Would work well as a 3-part testing series" if has_series else "Standalone post"
+            })
+        
+        # Idea 5: Performance optimization with top tags
+        if len(top_performing_tags) >= 2:
+            ideas.append({
+                "title": self._generate_title("deep-dive", [top_performing_tags[0], top_performing_tags[1]], analysis_data),
+                "description": f"Deep dive into performance optimization for applications using {top_performing_tags[0]} and {top_performing_tags[1]}. Includes benchmarking, profiling, and practical optimization techniques.",
+                "suggested_tags": [top_performing_tags[0], top_performing_tags[1], self._normalize_tag("performance"), self._normalize_tag("optimization")],
+                "estimated_reading_time": 7,
+                "performance_rationale": f"Performance-focused content using your top tags ({top_performing_tags[0]}, {top_performing_tags[1]}) consistently drives high engagement.",
+                "series_potential": "Would work well as a performance optimization series" if has_series else "Standalone post"
+            })
+        
+        # Idea 6: Security topics with top tag
+        if top_performing_tags:
+            ideas.append({
+                "title": self._generate_title("best-practices", [top_performing_tags[0], "security"], analysis_data),
+                "description": f"Essential security considerations and implementation techniques for {top_performing_tags[0]} applications. Covers common vulnerabilities, security testing, and secure coding practices.",
+                "suggested_tags": [top_performing_tags[0], self._normalize_tag("security"), self._normalize_tag("webdev"), self._normalize_tag("bestpractices")],
+                "estimated_reading_time": 8,
+                "performance_rationale": "Security topics consistently perform well across technical audiences, especially when combined with specific technology implementations.",
+                "series_potential": "Would work well as a security series" if has_series else "Standalone post"
+            })
+        
+        # Idea 7: Architecture patterns with best performing tags
+        if len(top_performing_tags) >= 2:
+            ideas.append({
+                "title": self._generate_title("deep-dive", [top_performing_tags[0], top_performing_tags[1]], analysis_data),
+                "description": f"Explore modern software architecture patterns using {top_performing_tags[0]} and {top_performing_tags[1]}. Learn about microservices, serverless, and scalable architectures.",
+                "suggested_tags": [top_performing_tags[0], top_performing_tags[1], self._normalize_tag("architecture"), self._normalize_tag("design-patterns")],
+                "estimated_reading_time": 9,
+                "performance_rationale": "Architecture-focused content tends to drive high engagement, especially when combined with practical implementation using top-performing technologies.",
+                "series_potential": "Would work well as a 5-part architecture series" if has_series else "Standalone post"
+            })
+        
         return ideas[:num_ideas]

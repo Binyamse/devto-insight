@@ -119,6 +119,12 @@ def api_analyze():
             llm_enabled = True
         elif llm_provider == "groq" and os.getenv("GROQ_API_KEY"):
             llm_enabled = True
+        elif llm_provider == "none":
+            llm_enabled = False
+        else:
+            # Use mock data if provider specified but API keys not configured
+            llm_enabled = True
+            llm_provider = "mock"
         
         if llm_enabled:
             llm_service = LLMService(llm_provider=llm_provider)

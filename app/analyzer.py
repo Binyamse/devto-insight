@@ -116,11 +116,11 @@ class DevToAnalyzer:
             
         articles_df = pd.DataFrame(self.detailed_articles)
         
-        # Handle missing values
-        articles_df['page_views_count'] = articles_df.get('page_views_count', 0).fillna(0)
-        articles_df['public_reactions_count'] = articles_df.get('public_reactions_count', 0).fillna(0)
-        articles_df['comments_count'] = articles_df.get('comments_count', 0).fillna(0)
-        articles_df['reading_time_minutes'] = articles_df.get('reading_time_minutes', 0).fillna(0)
+        # Handle missing values robustly
+        for col in ['page_views_count', 'public_reactions_count', 'comments_count', 'reading_time_minutes']:
+            if col not in articles_df:
+                articles_df[col] = 0
+            articles_df[col] = pd.to_numeric(articles_df[col], errors='coerce').fillna(0)
         
         # Calculate engagement and efficiency metrics
         articles_df['engagement_ratio'] = (articles_df['public_reactions_count'] + articles_df['comments_count']) / articles_df['page_views_count'].apply(lambda x: max(x, 1))
@@ -137,8 +137,14 @@ class DevToAnalyzer:
         # Time-based analysis
         time_performance = self._analyze_time_performance(articles_df)
         
+        # If all page_views_count are zero, use engagement as fallback for 'most_viewed'
+        if articles_df['page_views_count'].sum() == 0:
+            most_viewed = self._sort_and_format(articles_df, 'engagement_ratio', True)
+        else:
+            most_viewed = self._sort_and_format(articles_df, 'page_views_count', True)
+
         return {
-            'most_viewed': self._sort_and_format(articles_df, 'page_views_count', True),
+            'most_viewed': most_viewed,
             'most_reactions': self._sort_and_format(articles_df, 'public_reactions_count', True),
             'most_commented': self._sort_and_format(articles_df, 'comments_count', True),
             'highest_engagement': self._sort_and_format(articles_df, 'engagement_ratio', True),
