@@ -1,4 +1,17 @@
-# DEV.TO POST ANALYZER
+# DEV.TO POST ANALYZER 📊
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Status](https://img.shields.io/badge/status-active-success.svg)]()
+[![GitHub Issues](https://img.shields.io/github/issues/binyamse/devto-insight.svg)](https://github.com/binyamse/devto-insight/issues)
+[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/binyamse/devto-insight.svg)](https://github.com/binyamse/devto-insight/pulls)
+
+
+
+🚀 Supercharge your Dev.to content strategy with AI-powered insights and analytics
+
+
 
 A comprehensive tool for analyzing your dev.to blog posts' performance and getting AI-powered content recommendations.
 
@@ -9,7 +22,7 @@ A comprehensive tool for analyzing your dev.to blog posts' performance and getti
 > - Time-based performance patterns
 > - Tag effectiveness through engagement metrics
 
-![Dev.to Post Analyzer Screenshot](https://via.placeholder.com/800x450?text=Dev.to+Post+Analyzer)
+![Dev.to Post Analyzer Screenshot](docs/post-analyzer.png)
 
 ## Features
 
@@ -29,7 +42,7 @@ The easiest way to run the application is with Docker:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/devto-analyzer.git
+git clone https://github.com/binyamse/devto-analyzer.git
 cd devto-analyzer
 
 # Start with Docker Compose
@@ -44,7 +57,7 @@ If you prefer to run the application without Docker:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/devto-analyzer.git
+git clone https://github.com/binyamse/devto-analyzer.git
 cd devto-analyzer
 
 # Create and activate a virtual environment (optional but recommended)
@@ -95,7 +108,7 @@ Want to improve or extend the analyzer? Here's how to set up your development en
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/devto-analyzer.git
+git clone https://github.com/binyamse/devto-analyzer.git
 cd devto-analyzer
 
 # Create and activate a virtual environment
