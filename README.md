@@ -1,15 +1,37 @@
-# DEV.TO POST ANALYZER
+# DEV.TO POST ANALYZER 📊
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Status](https://img.shields.io/badge/status-active-success.svg)]()
+[![GitHub Issues](https://img.shields.io/github/issues/binyamse/devto-insight.svg)](https://github.com/binyamse/devto-insight/issues)
+[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/binyamse/devto-insight.svg)](https://github.com/binyamse/devto-insight/pulls)
+
+
+
+🚀 Supercharge your Dev.to content strategy with AI-powered insights and analytics
+
+
 
 A comprehensive tool for analyzing your dev.to blog posts' performance and getting AI-powered content recommendations.
 
-![Dev.to Post Analyzer Screenshot](https://via.placeholder.com/800x450?text=Dev.to+Post+Analyzer)
+> **Important Note About Performance Metrics**: This analyzer focuses on meaningful engagement metrics since view counts are not available through the dev.to API. Instead of relying on views, we analyze:
+> - Reaction counts and types (likes, unicorns, etc.)
+> - Comment engagement and discussion quality
+> - Content impact through engagement ratios
+> - Time-based performance patterns
+> - Tag effectiveness through engagement metrics
+
+![Dev.to Post Analyzer Screenshot](docs/post-analyzer.png)
 
 ## Features
 
-- **Performance Analysis**: Track views, reactions, comments, and engagement metrics
-- **Tag Analysis**: Discover which tags perform best with your audience
-- **Timing Optimization**: Find the best days and times to publish
-- **AI-Powered Insights**: Get content strategy recommendations from AI
+- **Performance Analysis**: Track engagement metrics including reactions, comments, and interaction rates
+  - Note: View counts are not available through the dev.to API
+  - Performance analysis focuses on quality metrics such as reaction-to-interaction ratios, comment engagement, and content effectiveness
+- **Tag Analysis**: Discover which tags perform best with your audience based on engagement metrics
+- **Timing Optimization**: Find the best days and times to publish for maximum engagement
+- **AI-Powered Insights**: Get data-driven content strategy recommendations based on your engagement patterns
 - **Content Ideas**: Generate topic ideas based on your historical performance
 - **Visualization**: Interactive charts to visualize your data
 - **Export Options**: Download your analysis in JSON or CSV format
@@ -20,7 +42,7 @@ The easiest way to run the application is with Docker:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/devto-analyzer.git
+git clone https://github.com/binyamse/devto-analyzer.git
 cd devto-analyzer
 
 # Start with Docker Compose
@@ -35,7 +57,7 @@ If you prefer to run the application without Docker:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/devto-analyzer.git
+git clone https://github.com/binyamse/devto-analyzer.git
 cd devto-analyzer
 
 # Create and activate a virtual environment (optional but recommended)
@@ -86,7 +108,7 @@ Want to improve or extend the analyzer? Here's how to set up your development en
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/devto-analyzer.git
+git clone https://github.com/binyamse/devto-analyzer.git
 cd devto-analyzer
 
 # Create and activate a virtual environment

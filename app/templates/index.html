@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev.to Post Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fab fa-dev"></i> Dev.to Post Analyzer</h1>
+            <p class="subtitle">Analyze your blog posts and get AI-powered recommendations</p>
+        </header>
+
+        <div class="card">
+            <div class="card-body">
+                <h2>Start Your Analysis</h2>
+                <p>
+                    Enter your Dev.to username to analyze your posts and discover which content performs best. 
+                    Optionally, add your API key for access to private stats.
+                </p>
+
+                <form action="/analyze" method="post" id="analyze-form">
+                    <div class="form-group">
+                        <label for="username">Dev.to Username:</label>
+                        <input type="text" id="username" name="username" required placeholder="e.g. ben">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="api_key">Dev.to API Key (Optional):</label>
+                        <div class="input-with-info">
+                            <input type="password" id="api_key" name="api_key" placeholder="For access to private stats">
+                            <div class="info-tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">
+                                    You can find your API key in your Dev.to settings under "Extensions" → "DEV API Keys".
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>LLM Provider for AI Analysis:</label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="openai" name="llm_provider" value="openai" checked>
+                                <label for="openai">OpenAI (GPT-4)</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="groq" name="llm_provider" value="groq">
+                                <label for="groq">Groq (Llama 3)</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="none" name="llm_provider" value="none">
+                                <label for="none">No AI Analysis</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-chart-line"></i> Analyze My Posts
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <i class="fas fa-chart-bar"></i>
+                <h3>Performance Metrics</h3>
+                <p>Analyze views, reactions, comments and find your best-performing content</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-tags"></i>
+                <h3>Tag Analysis</h3>
+                <p>Discover which topics and tags resonate most with your audience</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-clock"></i>
+                <h3>Timing Optimization</h3>
+                <p>Find the best days and times to publish for maximum engagement</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-robot"></i>
+                <h3>AI Recommendations</h3>
+                <p>Get smart content suggestions based on your performance data</p>
+            </div>
+        </div>
+
+        <footer>
+            <p>
+                Dev.to Post Analyzer is an open-source tool.
+                <a href="https://github.com/yourusername/devto-insight" target="_blank">
+                    <i class="fab fa-github"></i> View on GitHub
+                </a>
+            </p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
